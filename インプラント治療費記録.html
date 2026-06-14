@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="治療費記録">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1A2B3C">
+<title>インプラント治療費記録</title>
+<style>
+:root{
+  --navy:#1A2B3C;
+  --navy2:#243548;
+  --bg:#EEF2F7;
+  --card:#FFFFFF;
+  --text:#1A2B3C;
+  --sub:#7F8C8D;
+  --border:#DDE4EC;
+  --green:#64C8A0;
+  --green-act:#1D9E75;
+  --green-dark:#085041;
+  --blue-h:#7BB8E8;
+  --blue-act:#185FA5;
+  --blue-dark:#0C447C;
+  --orange:#F0A050;
+  --orange-dark:#B86A10;
+  --danger:#C0392B;
+  --r:12px;
+  --r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+#hd{background:var(--navy);padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top,0px));flex-shrink:0}
+#hd-top{display:flex;justify-content:space-between;align-items:flex-start}
+#hd-eyebrow{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.1em;margin-bottom:3px}
+#hd-total{font-size:30px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1}
+#hd-gear{width:34px;height:34px;border:none;background:rgba(255,255,255,.1);border-radius:17px;color:rgba(255,255,255,.7);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+#hd-cats{display:flex;gap:8px;margin:10px 0 0}
+.hcat{flex:1;background:rgba(255,255,255,.08);border-radius:7px;padding:7px 10px}
+.hcat-lbl{font-size:9px;color:rgba(255,255,255,.4);margin-bottom:3px}
+.hcat-val{font-size:14px;font-weight:700}
+.hcat.g .hcat-val{color:var(--green)}
+.hcat.b .hcat-val{color:var(--blue-h)}
+#hd-unpaid{display:none;margin-top:8px;background:rgba(240,160,80,.15);border-radius:7px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center}
+#hd-unpaid.hidden{display:none!important}
+.up-lbl{font-size:10px;color:var(--orange)}
+.up-val{font-size:13px;font-weight:700;color:var(--orange)}
+#hd-years{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+#hd-years::-webkit-scrollbar{display:none}
+.yr-chip{flex-shrink:0;background:rgba(255,255,255,.08);border-radius:7px;padding:6px 10px;text-align:center;border:1px solid transparent;min-width:68px}
+.yr-chip.now{background:rgba(100,200,160,.18);border-color:rgba(100,200,160,.5)}
+.yr-chip-y{font-size:9px;color:rgba(255,255,255,.45);margin-bottom:3px}
+.yr-chip.now .yr-chip-y{color:var(--green)}
+.yr-chip-v{font-size:12px;font-weight:700;color:#fff}
+.yr-chip.now .yr-chip-v{color:var(--green)}
+#hd-bar-wrap{margin-top:10px}
+#hd-bar-track{background:rgba(255,255,255,.1);border-radius:3px;height:3px;overflow:hidden}
+#hd-bar-fill{background:var(--green);height:3px;border-radius:3px;transition:width .4s}
+#hd-bar-txt{font-size:9px;color:rgba(255,255,255,.35);margin-top:4px}
+#tabs{display:flex;background:var(--navy2);padding:0 16px 12px;gap:8px;flex-shrink:0}
+.tab{flex:1;padding:9px 6px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.1);color:rgba(255,255,255,.45);transition:background .2s,color .2s}
+.tab.on{background:rgba(255,255,255,.18);color:#fff}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(80px + env(safe-area-inset-bottom,0px))}
+#sub-tabs{display:flex;gap:6px;margin-bottom:14px}
+.stab{flex:1;padding:8px 6px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s,color .2s}
+.stab.sg{background:var(--green-act);color:#fff}
+.stab.sb{background:var(--blue-act);color:#fff}
+.stab.off{background:var(--card);color:var(--sub);border:1px solid var(--border)}
+.yg{margin-bottom:20px}
+.yg-hd{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px;margin-bottom:7px}
+.yg-lbl{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.08em}
+.yg-sum{font-size:13px;font-weight:700}
+.ec{background:var(--card);border-radius:var(--r-sm);padding:12px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;border-left:3px solid;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;position:relative;transition:transform .12s}
+.ec:active{transform:scale(.975)}
+.ec.g{border-color:var(--green-act)}
+.ec.b{border-color:var(--blue-act)}
+.ec.unpaid{opacity:.75}
+.ec-date{min-width:36px;text-align:center;line-height:1}
+.ec-dm{font-size:10px;color:var(--sub);font-weight:600}
+.ec-dd{font-size:21px;font-weight:700;color:var(--text);line-height:1.1}
+.ec-body{flex:1;min-width:0}
+.ec-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ec-memo{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ec-right{text-align:right;flex-shrink:0}
+.ec-amt{font-size:16px;font-weight:700}
+.ec.g .ec-amt{color:var(--green-dark)}
+.ec.b .ec-amt{color:var(--blue-dark)}
+.ec.unpaid .ec-amt{color:var(--orange-dark)}
+.badge-up{font-size:9px;font-weight:700;background:var(--orange);color:#fff;border-radius:4px;padding:1px 5px;margin-top:3px;display:inline-block}
+.empty{text-align:center;padding:60px 20px;color:var(--sub)}
+.empty-ico{font-size:48px;margin-bottom:12px}
+.empty-txt{font-size:14px;line-height:1.7}
+.sy-card{background:var(--card);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.sy-card.now{border:1.5px solid var(--green-act)}
+.sy-yr{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sy-now-badge{font-size:10px;background:var(--green-act);color:#fff;border-radius:4px;padding:2px 7px;font-weight:700}
+.sy-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid var(--border)}
+.sy-row:last-child{border-bottom:none}
+.sy-row-lbl{font-size:12px;color:var(--sub)}
+.sy-row-val{font-size:14px;font-weight:700;color:var(--text)}
+.sy-row-val.g{color:var(--green-dark)}
+.sy-row-val.o{color:var(--orange-dark)}
+.sy-row-val.sub{font-size:12px;color:var(--sub);font-weight:400}
+.sy-note{font-size:10px;color:var(--sub);margin-top:8px;line-height:1.5}
+.sy-total-card{background:var(--navy);border-radius:var(--r);padding:16px;margin-top:6px}
+.sy-total-lbl{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:4px}
+.sy-total-val{font-size:22px;font-weight:700;color:#fff;margin-bottom:12px}
+.sy-total-rows{display:flex;flex-direction:column;gap:5px}
+.sy-total-row{display:flex;justify-content:space-between}
+.sy-total-row-lbl{font-size:11px;color:rgba(255,255,255,.5)}
+.sy-total-row-val{font-size:12px;font-weight:700;color:rgba(255,255,255,.85)}
+#fab{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));right:18px;width:54px;height:54px;border-radius:27px;border:none;font-size:28px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.3);transition:transform .15s,background .25s;z-index:50}
+#fab:active{transform:scale(.88)}
+#fab.g{background:var(--green-act)}
+#fab.b{background:var(--blue-act)}
+#ov{display:none;position:fixed;inset:0;background:rgba(10,20,32,.6);z-index:200;align-items:flex-end;justify-content:center}
+#ov.on{display:flex}
+#modal{background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:92dvh;overflow-y:auto}
+.drag{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 16px}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-size:18px;font-weight:700}
+.modal-x{width:30px;height:30px;border-radius:15px;border:none;background:var(--bg);font-size:16px;cursor:pointer;color:var(--sub);display:flex;align-items:center;justify-content:center}
+.modal-cat{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:14px}
+.modal-cat.g{background:#D4F5E7;color:var(--green-dark)}
+.modal-cat.b{background:#D6EAF8;color:var(--blue-dark)}
+.fg{margin-bottom:13px}
+.flbl{display:block;font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.finput{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:16px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .18s;appearance:none;-webkit-appearance:none}
+.finput:focus{border-color:var(--green-act)}
+.finput.fb:focus{border-color:var(--blue-act)}
+.paid-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
+.ptbtn{flex:1;padding:11px 8px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:#fff;color:var(--sub);transition:background .15s,color .15s}
+.ptbtn.on.pg{background:var(--green-act);color:#fff}
+.ptbtn.on.pb{background:var(--blue-act);color:#fff}
+.ptbtn.on.po{background:var(--orange);color:#fff}
+.mact{display:flex;gap:8px;margin-top:6px}
+.btn{flex:1;padding:14px 8px;border-radius:var(--r-sm);border:none;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.7}
+.btn-save{color:#fff}
+.btn-save.g{background:var(--green-act)}
+.btn-save.b{background:var(--blue-act)}
+.btn-cancel{background:var(--bg);color:var(--sub)}
+.btn-del{flex:0 0 auto;width:50px;background:#FDECEA;color:var(--danger);font-size:18px}
+#sv{display:none;position:fixed;inset:0;background:rgba(10,20,32,.6);z-index:300;align-items:flex-end;justify-content:center}
+#sv.on{display:flex}
+#smodal{background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:92dvh;overflow-y:auto}
+.sg{margin-bottom:14px}
+.sg-hd{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:.5px solid var(--border)}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.srow-lbl{font-size:14px;flex:1}
+.sinput{width:130px;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-family:inherit;color:var(--text);background:#fff;outline:none;text-align:right}
+.sinput:focus{border-color:var(--green-act)}
+.s-save{width:100%;padding:14px;border-radius:var(--r-sm);border:none;font-size:16px;font-weight:700;font-family:inherit;background:var(--green-act);color:#fff;cursor:pointer;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="hd">
+  <div id="hd-top">
+    <div>
+      <div id="hd-eyebrow">累計治療費（支払済）</div>
+      <div id="hd-total">¥—</div>
+    </div>
+    <button id="hd-gear" onclick="openSettings()">⚙</button>
+  </div>
+  <div id="hd-cats">
+    <div class="hcat g"><div class="hcat-lbl">保険外診療</div><div class="hcat-val" id="hv-self">—</div></div>
+    <div class="hcat b"><div class="hcat-lbl">保険診療</div><div class="hcat-val" id="hv-ins">—</div></div>
+  </div>
+  <div id="hd-unpaid" class="hidden">
+    <span class="up-lbl">未払い（請求済）</span>
+    <span class="up-val" id="hv-up">—</span>
+  </div>
+  <div id="hd-years"></div>
+  <div id="hd-bar-wrap">
+    <div id="hd-bar-track"><div id="hd-bar-fill" style="width:0%"></div></div>
+    <div id="hd-bar-txt"></div>
+  </div>
+</div>
+<div id="tabs">
+  <button class="tab on" data-t="rec" onclick="switchMain('rec')">記録</button>
+  <button class="tab" data-t="sum" onclick="switchMain('sum')">サマリー</button>
+</div>
+<div id="content">
+  <div id="pane-rec">
+    <div id="sub-tabs">
+      <button class="stab sg" data-s="selfpay" onclick="switchSub('selfpay')">保険外診療</button>
+      <button class="stab off" data-s="insurance" onclick="switchSub('insurance')">保険診療</button>
+    </div>
+    <div id="rec-list"></div>
+  </div>
+  <div id="pane-sum" style="display:none"></div>
+</div>
+<button id="fab" class="g" onclick="openAdd()">+</button>
+</div>
+<div id="ov" onclick="ovTap(event)">
+<div id="modal">
+  <div class="drag"></div>
+  <div class="modal-hd">
+    <div class="modal-title" id="modal-title">記録を追加</div>
+    <button class="modal-x" onclick="closeModal()">✕</button>
+  </div>
+  <div id="modal-cat-badge"></div>
+  <div class="fg"><label class="flbl">日付</label><input class="finput" id="f-date" type="date"></div>
+  <div class="fg"><label class="flbl">治療内容</label><input class="finput" id="f-treat" type="text" placeholder="例：インプラント1次手術" maxlength="50" autocomplete="off"></div>
+  <div class="fg"><label class="flbl" id="f-amt-lbl">支払金額（円）</label><input class="finput" id="f-amt" type="number" placeholder="0" min="0" inputmode="numeric"></div>
+  <div class="fg">
+    <label class="flbl">支払状態</label>
+    <div class="paid-toggle">
+      <button class="ptbtn on pg" id="pt-paid" onclick="setPaid(true)">支払済</button>
+      <button class="ptbtn po" id="pt-up" onclick="setPaid(false)">未払い</button>
+    </div>
+  </div>
+  <div class="fg"><label class="flbl">メモ（任意）</label><input class="finput" id="f-memo" type="text" maxlength="80" autocomplete="off"></div>
+  <div class="mact" id="mact"></div>
+</div>
+</div>
+<div id="sv" onclick="svTap(event)">
+<div id="smodal">
+  <div class="drag"></div>
+  <div class="modal-hd">
+    <div class="modal-title">設定</div>
+    <button class="modal-x" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="sg">
+    <div class="sg-hd">治療費見込み</div>
+    <div class="srow"><span class="srow-lbl">総額見込み（円）</span><input class="sinput" id="s-total" type="number" inputmode="numeric"></div>
+  </div>
+  <div class="sg">
+    <div class="sg-hd">年間目安（円）</div>
+    <div id="s-yearly"></div>
+  </div>
+  <div class="sg">
+    <div class="sg-hd">医療費控除</div>
+    <div class="srow"><span class="srow-lbl">税率（%）</span><input class="sinput" id="s-tax" type="number" inputmode="numeric"></div>
+    <div class="srow"><span class="srow-lbl">その他医療費/年（円）</span><input class="sinput" id="s-other" type="number" inputmode="numeric"></div>
+  </div>
+  <button class="s-save" onclick="saveSettings()">保存する</button>
+</div>
+</div>
+<script>
+const KEY='implant_v3';
+const NOW_YEAR=new Date().getFullYear();
+let mainTab='rec',subTab='selfpay',editId=null,isPaid=true;
+function defaultData(){return{settings:{totalBudget:4500000,yearlyBudget:{'2025':0,'2026':1500000,'2027':1000000,'2028':1000000,'2029':1000000},taxRate:20,otherMedical:130000},entries:[]};}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||defaultData();}catch{return defaultData();}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){alert('保存失敗:'+e);}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function yen(n){return'¥'+Math.round(n).toLocaleString('ja-JP');}
+function yenK(n){if(n===0)return'¥0';if(Math.abs(n)>=10000)return'¥'+(Math.round(n/10000*10)/10).toLocaleString('ja-JP')+'万';return yen(n);}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getYears(d){const ys=new Set(Object.keys(d.settings.yearlyBudget));d.entries.forEach(e=>ys.add(e.date.slice(0,4)));return[...ys].sort((a,b)=>a-b);}
+function renderHeader(){
+  const d=load();
+  const pe=d.entries.filter(e=>e.paid),ue=d.entries.filter(e=>!e.paid);
+  const total=pe.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('hd-total').textContent=yen(total);
+  document.getElementById('hv-self').textContent=yen(pe.filter(e=>e.category==='selfpay').reduce((s,e)=>s+e.amount,0));
+  document.getElementById('hv-ins').textContent=yen(pe.filter(e=>e.category==='insurance').reduce((s,e)=>s+e.amount,0));
+  const up=ue.reduce((s,e)=>s+e.amount,0);
+  const upEl=document.getElementById('hd-unpaid');
+  if(up>0){upEl.classList.remove('hidden');document.getElementById('hv-up').textContent=yen(up);}else{upEl.classList.add('hidden');}
+  const ys=getYears(d);
+  const yEl=document.getElementById('hd-years');
+  yEl.innerHTML=ys.map(y=>{const ysum=pe.filter(e=>e.date.startsWith(y)).reduce((s,e)=>s+e.amount,0);const isNow=parseInt(y)===NOW_YEAR;return`<div class="yr-chip${isNow?' now':''}"><div class="yr-chip-y">${y}</div><div class="yr-chip-v">${ysum>0?yenK(ysum):'—'}</div></div>`;}).join('');
+  setTimeout(()=>{const chips=[...yEl.querySelectorAll('.yr-chip')];const nc=chips.find((_,i)=>ys[i]===String(NOW_YEAR));if(nc)nc.scrollIntoView({inline:'center',behavior:'smooth'});},100);
+  const pct=d.settings.totalBudget>0?Math.min(100,(total/d.settings.totalBudget)*100):0;
+  document.getElementById('hd-bar-fill').style.width=pct.toFixed(1)+'%';
+  document.getElementById('hd-bar-txt').textContent=`見込み${yenK(d.settings.totalBudget)}のうち ${yen(total)}`;
+}
+function renderRec(){
+  const d=load();const cls=subTab==='selfpay'?'g':'b';
+  const entries=d.entries.filter(e=>e.category===subTab).sort((a,b)=>b.date.localeCompare(a.date));
+  const list=document.getElementById('rec-list');
+  if(!entries.length){list.innerHTML=`<div class="empty"><div class="empty-ico">🦷</div><div class="empty-txt">まだ記録がありません<br>＋ボタンで追加してください</div></div>`;return;}
+  const byY={};entries.forEach(e=>{const y=e.date.slice(0,4);(byY[y]=byY[y]||[]).push(e);});
+  const sc=subTab==='selfpay'?'var(--green-dark)':'var(--blue-dark)';
+  list.innerHTML=Object.keys(byY).sort((a,b)=>b-a).map(y=>{
+    const ysum=byY[y].filter(e=>e.paid).reduce((s,e)=>s+e.amount,0);
+    const cards=byY[y].map(e=>{const[,mm,dd]=e.date.split('-');return`<div class="ec ${cls}${e.paid?'':' unpaid'}" onclick="openEdit('${e.id}')"><div class="ec-date"><div class="ec-dm">${+mm}月</div><div class="ec-dd">${+dd}</div></div><div class="ec-body"><div class="ec-name">${escH(e.treatment)}</div>${e.memo?`<div class="ec-memo">${escH(e.memo)}</div>`:''}</div><div class="ec-right"><div class="ec-amt">${yen(e.amount)}</div>${!e.paid?'<span class="badge-up">未払</span>':''}</div></div>`;}).join('');
+    return`<div class="yg"><div class="yg-hd"><span class="yg-lbl">${y}年（支払済）</span><span class="yg-sum" style="color:${sc}">${yen(ysum)}</span></div>${cards}</div>`;
+  }).join('');
+}
+function renderSum(){
+  const d=load();const pane=document.getElementById('pane-sum');const ys=getYears(d);
+  const ap=d.entries.filter(e=>e.paid);
+  const gT=ap.reduce((s,e)=>s+e.amount,0),gS=ap.filter(e=>e.category==='selfpay').reduce((s,e)=>s+e.amount,0),gI=ap.filter(e=>e.category==='insurance').reduce((s,e)=>s+e.amount,0);
+  let gD=0;
+  const cards=ys.map(y=>{
+    const ye=d.entries.filter(e=>e.date.startsWith(y));
+    const yp=ye.filter(e=>e.paid),yu=ye.filter(e=>!e.paid);
+    const ypT=yp.reduce((s,e)=>s+e.amount,0),yuT=yu.reduce((s,e)=>s+e.amount,0);
+    const bud=d.settings.yearlyBudget[y]||0,isNow=parseInt(y)===NOW_YEAR;
+    const db=ypT+d.settings.otherMedical-100000,ded=Math.max(0,db)*(d.settings.taxRate/100);
+    gD+=ded;
+    return`<div class="sy-card${isNow?' now':''}"><div class="sy-yr">${y}年${isNow?'<span class="sy-now-badge">今年</span>':''}</div><div class="sy-row"><span class="sy-row-lbl">支払済</span><span class="sy-row-val g">${yen(ypT)}</span></div>${yuT>0?`<div class="sy-row"><span class="sy-row-lbl">未払い（請求済）</span><span class="sy-row-val o">${yen(yuT)}</span></div>`:''  }${bud>0?`<div class="sy-row"><span class="sy-row-lbl">年間目安</span><span class="sy-row-val${ypT>bud?' o':' sub'}">${yen(bud)}</span></div>`:''}<div class="sy-row"><span class="sy-row-lbl">控除概算（参考）</span><span class="sy-row-val sub">${ded>0?'約'+yen(Math.round(ded)):'—'}</span></div><div class="sy-note">※ 家族医療費（設定値 ${yen(d.settings.otherMedical)}/年）を含む参考値。年明け後に実績で更新してください。</div></div>`;
+  }).join('');
+  pane.innerHTML=cards+`<div class="sy-total-card"><div class="sy-total-lbl">累計サマリー</div><div class="sy-total-val">${yen(gT)}</div><div class="sy-total-rows"><div class="sy-total-row"><span class="sy-total-row-lbl">うち保険外</span><span class="sy-total-row-val">${yen(gS)}</span></div><div class="sy-total-row"><span class="sy-total-row-lbl">うち保険診療</span><span class="sy-total-row-val">${yen(gI)}</span></div><div class="sy-total-row"><span class="sy-total-row-lbl">控除概算累計（参考）</span><span class="sy-total-row-val">${yen(Math.round(gD))}</span></div><div class="sy-total-row"><span class="sy-total-row-lbl">見込み総額</span><span class="sy-total-row-val">${yen(d.settings.totalBudget)}</span></div></div></div>`;
+}
+function render(){renderHeader();if(mainTab==='rec')renderRec();else renderSum();}
+function switchMain(t){mainTab=t;document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('on',el.dataset.t===t));document.getElementById('pane-rec').style.display=t==='rec'?'':'none';document.getElementById('pane-sum').style.display=t==='sum'?'':'none';document.getElementById('fab').style.display=t==='rec'?'':'none';render();}
+function switchSub(s){subTab=s;document.querySelectorAll('.stab').forEach(el=>{const isSelf=el.dataset.s==='selfpay';el.className='stab '+(el.dataset.s===s?(isSelf?'sg':'sb'):'off');});document.getElementById('fab').className=s==='selfpay'?'g':'b';renderRec();}
+function setPaid(v){isPaid=v;const cls=subTab==='selfpay'?'pg':'pb';document.getElementById('pt-paid').className='ptbtn'+(v?' on '+cls:'');document.getElementById('pt-up').className='ptbtn'+(!v?' on po':'');}
+function buildModalBtns(isEdit){const mact=document.getElementById('mact');mact.innerHTML='';if(isEdit){const db=document.createElement('button');db.className='btn btn-del';db.textContent='🗑';db.onclick=deleteEntry;mact.appendChild(db);}const cb=document.createElement('button');cb.className='btn btn-cancel';cb.textContent='キャンセル';cb.onclick=closeModal;mact.appendChild(cb);const sb=document.createElement('button');sb.className=`btn btn-save ${subTab==='selfpay'?'g':'b'}`;sb.textContent='保存';sb.onclick=saveEntry;mact.appendChild(sb);}
+function openAdd(){editId=null;const today=new Date().toLocaleDateString('sv');document.getElementById('f-date').value=today;document.getElementById('f-treat').value='';document.getElementById('f-amt').value='';document.getElementById('f-memo').value='';document.getElementById('modal-title').textContent='記録を追加';const isSelf=subTab==='selfpay';document.getElementById('modal-cat-badge').innerHTML=`<div class="modal-cat ${isSelf?'g':'b'}">${isSelf?'保険外診療':'保険診療'}</div>`;document.getElementById('f-amt-lbl').textContent=isSelf?'支払金額（円）':'窓口負担額（円）';document.getElementById('f-amt').className='finput'+(isSelf?'':' fb');setPaid(true);buildModalBtns(false);document.getElementById('ov').classList.add('on');setTimeout(()=>document.getElementById('f-treat').focus(),350);}
+function openEdit(id){editId=id;const d=load();const e=d.entries.find(x=>x.id===id);if(!e)return;if(e.category!==subTab){switchSub(e.category);}document.getElementById('f-date').value=e.date;document.getElementById('f-treat').value=e.treatment;document.getElementById('f-amt').value=e.amount;document.getElementById('f-memo').value=e.memo||'';document.getElementById('modal-title').textContent='記録を編集';const isSelf=e.category==='selfpay';document.getElementById('modal-cat-badge').innerHTML=`<div class="modal-cat ${isSelf?'g':'b'}">${isSelf?'保険外診療':'保険診療'}</div>`;document.getElementById('f-amt-lbl').textContent=isSelf?'支払金額（円）':'窓口負担額（円）';document.getElementById('f-amt').className='finput'+(isSelf?'':' fb');setPaid(e.paid!==false);buildModalBtns(true);document.getElementById('ov').classList.add('on');}
+function closeModal(){document.getElementById('ov').classList.remove('on');editId=null;}
+function ovTap(ev){if(ev.target===document.getElementById('ov'))closeModal();}
+function saveEntry(){const date=document.getElementById('f-date').value.trim();const treat=document.getElementById('f-treat').value.trim();const amt=parseInt(document.getElementById('f-amt').value,10)||0;const memo=document.getElementById('f-memo').value.trim();if(!date){alert('日付を入力してください');return;}if(!treat){alert('治療内容を入力してください');return;}const d=load();if(editId){const idx=d.entries.findIndex(x=>x.id===editId);if(idx>=0)d.entries[idx]={id:editId,date,treatment:treat,category:subTab,amount:amt,paid:isPaid,memo};}else{d.entries.push({id:uid(),date,treatment:treat,category:subTab,amount:amt,paid:isPaid,memo});}save(d);closeModal();render();}
+function deleteEntry(){if(!editId)return;if(!confirm('この記録を削除しますか？'))return;const d=load();d.entries=d.entries.filter(x=>x.id!==editId);save(d);closeModal();render();}
+function openSettings(){const d=load();document.getElementById('s-total').value=d.settings.totalBudget;document.getElementById('s-tax').value=d.settings.taxRate;document.getElementById('s-other').value=d.settings.otherMedical;const ys=getYears(d);document.getElementById('s-yearly').innerHTML=ys.map(y=>`<div class="srow"><span class="srow-lbl">${y}年</span><input class="sinput" id="sy-${y}" type="number" inputmode="numeric" value="${d.settings.yearlyBudget[y]||0}"></div>`).join('');document.getElementById('sv').classList.add('on');}
+function saveSettings(){const d=load();d.settings.totalBudget=parseInt(document.getElementById('s-total').value,10)||0;d.settings.taxRate=parseInt(document.getElementById('s-tax').value,10)||0;d.settings.otherMedical=parseInt(document.getElementById('s-other').value,10)||0;const ys=getYears(d);ys.forEach(y=>{const el=document.getElementById('sy-'+y);if(el)d.settings.yearlyBudget[y]=parseInt(el.value,10)||0;});save(d);closeSettings();render();}
+function closeSettings(){document.getElementById('sv').classList.remove('on');}
+function svTap(ev){if(ev.target===document.getElementById('sv'))closeSettings();}
+render();
+</script>
+</body>
+</html>
