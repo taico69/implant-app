@@ -361,7 +361,20 @@ html,body{height:100%;font-family:-apple-system,'Hiragino Sans','Hiragino Kaku G
     <div class="srow"><span class="srow-lbl">税率（%）</span><input class="sinput" id="s-tax" type="number" inputmode="numeric"></div>
     <div class="srow"><span class="srow-lbl">その他医療費/年（円）</span><input class="sinput" id="s-other" type="number" inputmode="numeric"></div>
   </div>
-  <button class="s-save" onclick="saveSettings()">保存する</button>
+    <div class="sg" style="margin-top:8px">
+    <div class="sg-hd">データ管理</div>
+    <button class="s-save" style="background:var(--blue-act);margin-bottom:8px" onclick="showImport()">📥 データをインポート</button>
+    <button class="s-save" style="background:var(--sub)" onclick="exportData()">📤 データをエクスポート</button>
+  </div>
+  <div id="import-area" style="display:none;margin-top:10px">
+    <label class="flbl">JSONを貼り付けてください</label>
+    <textarea class="finput" id="import-json" rows="6" style="font-size:12px;resize:vertical" placeholder='{"entries":[...]}' autocomplete="off"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-cancel" onclick="hideImport()">キャンセル</button>
+      <button class="btn btn-save g" onclick="doImport()">インポート実行</button>
+    </div>
+  </div>
+<button class="s-save" onclick="saveSettings()">保存する</button>
 </div>
 </div>
 
@@ -553,6 +566,34 @@ function openSettings(){const d=load();document.getElementById('s-total').value=
 function saveSettings(){const d=load();d.settings.totalBudget=parseInt(document.getElementById('s-total').value,10)||0;d.settings.taxRate=parseInt(document.getElementById('s-tax').value,10)||0;d.settings.otherMedical=parseInt(document.getElementById('s-other').value,10)||0;const ys=getYears(d);ys.forEach(y=>{const el=document.getElementById('sy-'+y);if(el)d.settings.yearlyBudget[y]=parseInt(el.value,10)||0;});save(d);closeSettings();render();}
 function closeSettings(){document.getElementById('sv').classList.remove('on');}
 function svTap(ev){if(ev.target===document.getElementById('sv'))closeSettings();}
+
+/* IMPORT/EXPORT */
+
+/* IMPORT / EXPORT */
+function showImport(){document.getElementById('import-area').style.display='';document.getElementById('import-json').value='';document.getElementById('import-json').focus();}
+function hideImport(){document.getElementById('import-area').style.display='none';}
+function doImport(){
+  try{
+    const raw=JSON.parse(document.getElementById('import-json').value);
+    if(!raw.entries||!Array.isArray(raw.entries)){alert('フォーマットが正しくありません');return;}
+    const d=load();
+    const existIds=new Set(d.entries.map(e=>e.id));
+    let added=0;
+    raw.entries.forEach(e=>{if(!existIds.has(e.id)){d.entries.push(e);added++;}} );
+    save(d);
+    alert(added+'件を追加しました。');
+    hideImport();closeSettings();render();
+  }catch(e){alert('JSONの解析に失敗しました: '+e.message);}
+}
+function exportData(){
+  const d=load();
+  const json=JSON.stringify({entries:d.entries},null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='implant_backup_'+new Date().toLocaleDateString('sv')+'.json';
+  a.click();
+}
 
 /* INIT */
 render();
